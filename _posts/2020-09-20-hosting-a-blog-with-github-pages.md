@@ -5,7 +5,7 @@ permalink: /2020/09/20/hosting-a-blog-with-github-pages
 tags: jekyll github
 ---
 
-Hosting a blog on Github Pages is extremely simple and completely free. We will 
+Hosting a blog with Github Pages is extremely simple and completely free. We will 
 walk through the creation process of this blog in this post.
 
 ## Create a Github repository
