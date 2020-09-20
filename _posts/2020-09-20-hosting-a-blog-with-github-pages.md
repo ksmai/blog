@@ -2,7 +2,7 @@
 layout: post
 title:  "Hosting a blog with Github Pages"
 permalink: /2020/09/20/hosting-a-blog-with-github-pages
-tags: jekyll github
+tags: jekyll website
 ---
 
 Hosting a blog with Github Pages is extremely simple and completely free. We will 
