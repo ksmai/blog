@@ -149,6 +149,15 @@ Another neat thing is that all the `.value` calls are gone. The client should
 be able to extract the bottled-up value (or error) using a little [helper
 function][either-helper].
 
+## Some closing thoughts on functional programming
+
+I don't really strive for the purest functional programming style like some
+others do. On the top level I still tend to lean towards the object oriented
+paradigm as it makes program design feel more natural. I do, however, like to
+add a bit of functional flvaour within implementation of objects where it
+makes sense. As illustrated by this error handling example, this often can
+improve code clarity and help us reason about the code.
+
 The full code sample can be downloaded [here][code].
 
 [code]: https://github.com/ksmai/functional-error-handling-demo/blob/master/index.ts
