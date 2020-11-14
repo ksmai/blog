@@ -149,7 +149,7 @@ Another neat thing is that all the `.value` calls are gone. The client should
 be able to extract the bottled-up value (or error) using a little [helper
 function][either-helper].
 
-The full code sample can be downloaded at [here][code].
+The full code sample can be downloaded [here][code].
 
 [code]: https://github.com/ksmai/functional-error-handling-demo/blob/master/index.ts
 [ddd]: https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215
