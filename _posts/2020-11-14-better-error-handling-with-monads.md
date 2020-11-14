@@ -44,8 +44,8 @@ disjoint union of `Left<E, A>` and `Right<E, A>`. In typescript:
 type Either<E, A> = Left<E, A> | Right<E, A>;
 {% endhighlight %}
 
-Conventionally, `Left<E>` is used for errors and `Right<A>` contains
-successful computation results. The freely available ebook [Professor
+Conventionally, `Left<E, A>` is used for errors and `Right<E, A>` contains
+successful computation results. The freely available e-book [Professor
 Frisby's Mostly Adequate Guide to Functional
 Programming][mostly-adequate-guide] provides an excellent introduction to
 `Either` and many more functional programming concepts.
@@ -57,24 +57,25 @@ easily forgotten and clutters the program text with syntax noise.
 
 ## Either as functor
 
-However, I believe the above `createUser` snippet can be further improved by
-taking advantage of more interesting properties of `Either`. First, let's
-take a look of how `Either` behaves as a functor.
+However, it should be possible to improve the above `createUser1` snippet
+ftrther by taking advantage of more interesting properties of `Either`.
+First, let's take a look of how `Either` behaves as a functor.
 
 {% highlight typescript %}
 let two: Either<string, number> = new Right(1).map(double);      // Right(2)
 let err: Either<string, number> = new Left("BOOM!").map(double); // Left("BOOM!")
 {% endhighlight %}
 
-In other words, the `Left` type actually shortcircuits all further
-computations once an error like "BOOM!" occurs. This is a very powerful
-property that can help us remove all those `isLeft` checking in the previous
+In other words, the `Left` type actually short-circuits all future
+computations once an error like *"BOOM!"* occurs. This is a very powerful
+property that can help us remove all those `isLeft` checks in the previous
 code, making the core program logic much more prominent.
 
-There is one issue here that prevents us to just drop `map` into our
-`createUser` function: our `parse` functions are returning `Either`s instead
-of plain value objects. This means that we will get a `Either<E, Either<E,
-Either<E, User>>>` at the end, not the desired `Either<E, User>` as before:
+Unfortunately, there is one issue here that prevents us from just dropping
+`map` into our `createUser` function directly: our `parse` functions are
+returning `Either`s instead of plain value objects. This means that we will
+get a `Either<E, Either<E, Either<E, User>>>` at the end, but not the desired
+`Either<E, User>` as before:
 
 {% highlight typescript %}
 function createUser2(name: string, email: string, password: string): Either<E, Either<E, Either<E, User>>> {
@@ -98,9 +99,9 @@ function createUser2(name: string, email: string, password: string): Either<E, E
 }
 {% endhighlight %}
 
-What a hassle! In addition to the nested Either, we also need to add lots of
-type casting as typescript doesn't know that only `Right<E, A>` would run the
-map function. We can do better.
+What a hassle! In addition to the nested `Either`s, we also need to add lots
+of ugly type casting as typescript doesn't know that only `Right<E, A>` would
+run the map function. We can do better.
 
 ## Monad to the rescue
 
@@ -108,14 +109,18 @@ map function. We can do better.
 
 > chain :: Monad m => (a => m b) -> m a -> m b
 
-Using `chain`, we can flatten all the nested `Either` as follow:
+Using `chain`, we can flatten all the nested `Either`s as follow:
 
 {% highlight typescript %}
-function createUser(name: string, email: string, password: string): Either<E, User> {
+function createUser3(name: string, email: string, password: string): Either<E, User> {
   const userName: Either<E, UserName> = UserName.parse(name);
   const userEmail: Either<E, UserEmail> = userName.chain(() => UserEmail.parse(email));
   const userPassword: Either<E, UserPassword> = userEmail.chain(() => UserPassword.parse(password));
-  return userPassword.map(() => new User(userName.value, userEmail.value, userPassword.value));
+  return userPassword.map(() => new User(
+    userName.value as UserName,
+    userEmail.value as UserEmail,
+    userPassword.value as UserPassword,
+  ));
 }
 {% endhighlight %}
 
@@ -129,7 +134,7 @@ be even more pure in the functional world, we can replace all the variable
 assignments with closure like this:
 
 {% highlight typescript %}
-function createUser(name: string, email: string, password: string): Either<E, User> {
+function createUser4(name: string, email: string, password: string): Either<E, User> {
   return UserName.parse(name).chain((userName: UserName) =>
       UserEmail.parse(email).chain((userEmail: UserEmail) =>
         UserPassword.parse(password).map((userPassword: UserPassword) =>
@@ -140,10 +145,14 @@ function createUser(name: string, email: string, password: string): Either<E, Us
 This final version is very satisfying to read. Not only does it eliminates
 all the explicit type casting, but it also makes the sequential parsing logic
 explicit while hiding away all the error handling code in a type safe manner.
+Another neat thing is that all the `.value` calls are gone. The client should
+be able to extract the bottled-up value (or error) using a little [helper
+function][either-helper].
 
-The full code samples can be downloaded at [here][code].
+The full code sample can be downloaded at [here][code].
 
-[khalilstemmler]: https://khalilstemmler.com/articles/enterprise-typescript-nodejs/functional-error-handling/
-[ddd]: https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215
-[mostly-adequate-guide]: https://mostly-adequate.gitbooks.io/mostly-adequate-guide/content/ch08.html
 [code]: https://github.com/ksmai/functional-error-handling-demo/blob/master/index.ts
+[ddd]: https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215
+[either-helper]: https://mostly-adequate.gitbooks.io/mostly-adequate-guide/content/appendix_a.html#either
+[khalilstemmler]: https://khalilstemmler.com/articles/enterprise-typescript-nodejs/functional-error-handling/
+[mostly-adequate-guide]: https://mostly-adequate.gitbooks.io/mostly-adequate-guide/content/ch08.html
