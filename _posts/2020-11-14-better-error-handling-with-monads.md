@@ -100,7 +100,7 @@ function createUser2(name: string, email: string, password: string): Either<E, E
 {% endhighlight %}
 
 What a hassle! In addition to the nested `Either`s, we also need to add lots
-of ugly type casting as typescript doesn't know that only `Right<E, A>` would
+of ugly type assertions as typescript doesn't know that only `Right<E, A>` would
 run the map function. We can do better.
 
 ## Monad to the rescue
@@ -143,7 +143,7 @@ function createUser4(name: string, email: string, password: string): Either<E, U
 {% endhighlight %}
 
 This final version is very satisfying to read. Not only does it eliminates
-all the explicit type casting, but it also makes the sequential parsing logic
+all the explicit type assertions, but it also makes the sequential parsing logic
 explicit while hiding away all the error handling code in a type safe manner.
 Another neat thing is that all the `.value` calls are gone. The client should
 be able to extract the bottled-up value (or error) using a little [helper
